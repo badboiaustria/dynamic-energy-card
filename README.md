@@ -7,7 +7,10 @@ Every circle grows and pulses with its live power, flow dots stream along the
 links, and a custom force simulation keeps everything collision-free — even
 with 40+ devices. One file, no build step, no dependencies.
 
-![Overview](docs/overview.png)
+[![Overview – click to watch the demo video](docs/overview.png)](docs/Dynamic%20Energy%20Card%20Video.mp4)
+
+▶ **[Watch the demo video](docs/Dynamic%20Energy%20Card%20Video.mp4)** – the live animation,
+groups, drag & drop and the motion features in action.
 
 ## Features
 
@@ -48,6 +51,26 @@ Expanded group and German UI:
 ![Expanded group](docs/groups.png)
 
 ![German UI](docs/german.png)
+
+## Mobile, motion & wall displays
+
+The card is built to be touched:
+
+- **Tap** a circle for its popup (or to toggle a switchable device),
+  **long-press** for the popup on touch devices, **drag** a circle anywhere to
+  pin it (dashed ring); *Shuffle* releases all pins.
+- **Shake to shuffle** – shake your phone and the circles rearrange
+  (`devicemotion`, with debouncing so a bump on the table doesn't trigger it).
+- **Tilt gravity** – tilt the device left/right/up/down and the circles slowly
+  fall in that direction, then spring back to their rings when you level the
+  device again. The neutral position is learned from how you hold the phone,
+  so normal handling doesn't move anything. On iOS the card asks for the
+  motion permission on your first tap.
+- **Wall panels** – the card works excellently on wall-mounted dashboards; it
+  is in daily use on a **Shelly Wall Display**. The physics engine sleeps
+  whenever the layout is at rest, so an idle card costs almost no CPU — ideal
+  for an always-on display. Combined with the clock and the *Hide values*
+  button it makes a clean full-screen energy panel (`options.height: max`).
 
 ## Installation
 
