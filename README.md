@@ -43,7 +43,11 @@ with 40+ devices. One file, no build step, no dependencies.
 - **Demo mode** – try everything without a single sensor (`demo: true`),
   including scenario buttons (PV drop, battery flip, 20 kW peak …).
 
-![Demo mode](docs/demo.png)
+Expanded group and German UI:
+
+![Expanded group](docs/groups.png)
+
+![German UI](docs/german.png)
 
 ## Installation
 

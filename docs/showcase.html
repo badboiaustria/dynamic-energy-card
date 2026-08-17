@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dynamic EnergyCard – showcase</title>
+<style>
+  :root {
+    --card-background-color: #1c1f26;
+    --primary-text-color: #e8eaed;
+    --secondary-text-color: #9aa0a6;
+    --divider-color: #3c4043;
+    --disabled-color: #5f6368;
+    --secondary-background-color: #2c313a;
+    --primary-color: #03a9f4;
+  }
+  body { margin: 0; background: #111418; font-family: Roboto, "Segoe UI", sans-serif; overflow: hidden; }
+  ha-icon svg { display: block; }
+  ha-card { display: block; background: var(--card-background-color); border-radius: 14px; }
+  .stage { width: 1240px; height: 820px; margin: 10px auto; }
+</style>
+</head>
+<body>
+<div class="stage"><dynamic-energy-card id="card"></dynamic-energy-card></div>
+<script>
+  // Minimal ha-icon shim for standalone screenshots: loads MDI icons from
+  // Iconify as inline SVG (fill=currentColor inherits the card's colors).
+  class HaIconShim extends HTMLElement {
+    static get observedAttributes() { return ['icon']; }
+    attributeChangedCallback() { this._render(); }
+    connectedCallback() { this._render(); }
+    async _render() {
+      const name = (this.getAttribute('icon') || 'mdi:flash').replace('mdi:', '');
+      const size = (this.style.getPropertyValue('--mdc-icon-size') || '24px').trim();
+      try {
+        const svg = await (await fetch('https://api.iconify.design/mdi/' + name + '.svg')).text();
+        if (!svg.startsWith('<svg')) throw new Error('no svg');
+        this.innerHTML = svg.replace('<svg', '<svg width="' + size + '" height="' + size + '"');
+      } catch (e) {
+        this.textContent = '⚡';
+        this.style.fontSize = size;
+      }
+    }
+  }
+  customElements.define('ha-icon', HaIconShim);
+</script>
+<script src="../dynamic-energy-card.js"></script>
+<script>
+  const st = (v, u, extra) => ({ state: String(v), attributes: Object.assign({ unit_of_measurement: u }, extra || {}) });
+  const states = {
+    'sensor.pv_power': st(6420, 'W'),
+    'sensor.grid_power': st(-1230, 'W'),
+    'sensor.battery_power': st(1850, 'W'),
+    'sensor.battery_soc': st(76, '%'),
+    'sensor.heat_pump_power': st(2380, 'W'),
+    'sensor.ev_charger_power': st(2200, 'W'),
+    'sensor.ev_soc': st(64, '%'),
+    'sensor.dishwasher_power': st(1120, 'W'),
+    'sensor.server_rack_power': st(240, 'W'),
+    'sensor.washing_machine_power': st(480, 'W'),
+    'sensor.fridge_power': st(130, 'W'),
+    'sensor.coffee_maker_power': st(0, 'W'),
+    'sensor.grid_import_daily': st(2.4, 'kWh'),
+    'sensor.grid_export_daily': st(8.1, 'kWh'),
+    'sensor.pv_daily': st(41.2, 'kWh'),
+    'sensor.battery_in_daily': st(9.6, 'kWh'),
+    'sensor.battery_out_daily': st(6.2, 'kWh'),
+    'sensor.boiler_temperature': st(61, '°C'),
+  };
+  const card = document.getElementById('card');
+  card.setConfig({
+    inverter: { name: 'Inverter' },
+    options: { max_power: 12000 },
+    stats: {
+      grid_import: 'sensor.grid_import_daily', grid_export: 'sensor.grid_export_daily',
+      pv: 'sensor.pv_daily', battery_in: 'sensor.battery_in_daily', battery_out: 'sensor.battery_out_daily',
+    },
+    storage: { items: [
+      { name: 'Battery', soc_entity: 'sensor.battery_soc', capacity_kwh: 10 },
+      { name: 'EV', soc_entity: 'sensor.ev_soc', capacity_kwh: 77 },
+      { name: 'Hot water', temp_entity: 'sensor.boiler_temperature', temp_min: 20, temp_max: 80, capacity_kwh: 30 },
+    ] },
+    residual: { show: true },
+    groups: [
+      { id: 'household', name: 'Household', icon: 'mdi:silverware-fork-knife', color: '#FF7043' },
+    ],
+    nodes: [
+      { id: 'pv', name: 'PV', icon: 'mdi:solar-power', color: '#FDB813', power_entity: 'sensor.pv_power', role: 'source' },
+      { id: 'grid', name: 'Grid', icon: 'mdi:transmission-tower', color: '#9E9E9E', power_entity: 'sensor.grid_power', role: 'auto' },
+      { id: 'battery', name: 'Battery', icon: 'mdi:battery-high', color: '#4CAF50', power_entity: 'sensor.battery_power', role: 'auto',
+        ring: 'fill', fill_entity: 'sensor.battery_soc', inner_text_entity: 'sensor.battery_soc', inner_text_unit: '%' },
+      { id: 'heatpump', name: 'Heat pump', icon: 'mdi:heat-pump', color: '#26C6DA', power_entity: 'sensor.heat_pump_power' },
+      { id: 'ev', name: 'EV charger', icon: 'mdi:ev-station', color: '#AB47BC', power_entity: 'sensor.ev_charger_power',
+        ring: 'fill', fill_entity: 'sensor.ev_soc', inner_text_entity: 'sensor.ev_soc', inner_text_unit: '%' },
+      { id: 'dishwasher', name: 'Dishwasher', icon: 'mdi:dishwasher', color: '#66BB6A', power_entity: 'sensor.dishwasher_power' },
+      { id: 'server', name: 'Server rack', icon: 'mdi:server', color: '#EC407A', power_entity: 'sensor.server_rack_power' },
+      { id: 'washer', name: 'Washing machine', icon: 'mdi:washing-machine', color: '#29B6F6', group: 'household', power_entity: 'sensor.washing_machine_power' },
+      { id: 'fridge', name: 'Fridge', icon: 'mdi:fridge', color: '#26A69A', group: 'household', power_entity: 'sensor.fridge_power' },
+      { id: 'coffee', name: 'Coffee maker', icon: 'mdi:coffee-maker', color: '#8D6E63', group: 'household', power_entity: 'sensor.coffee_maker_power' },
+    ],
+  });
+  const q = new URLSearchParams(location.search);
+  card.hass = q.get('lang') === 'de'
+    ? { states, locale: { language: 'de' }, callService: () => {} }
+    : { states, callService: () => {} };
+  if (q.get('expand')) setTimeout(() => card._toggleGroup(card._byId.get('household')), 1500);
+  window._card = card;
+</script>
+</body>
+</html>
